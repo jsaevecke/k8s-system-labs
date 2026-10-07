@@ -154,23 +154,9 @@ labctl list
 labctl start image-pull-backoff
 ```
 
-`labctl` discovers the nearest ancestor containing `labs/`, so the commands also work from descendant directories. It resolves `image-pull-backoff` to `labs/image-pull-backoff/lab.yaml`, creates a Kind cluster with one control-plane node and one worker, applies the lab manifest, and waits for the Pod to enter `ImagePullBackOff`. Generated state remains under the repository root.
-
-A ready lab reports structured output similar to:
-
-```text
-level=INFO msg="lab ready" lab=image-pull-backoff namespace=default pod=broken-image waiting_reason=ImagePullBackOff
-```
+`labctl` discovers the nearest ancestor containing `labs/`, so the commands also work from descendant directories. It creates an isolated environment for the selected lab and reports when the scenario is ready. Generated state remains under the repository root.
 
 Kind and kubectl standard output is logged at `INFO`; standard error is logged at `ERROR`, keeping provider command output in the same structured stream.
-
-Use the generated kubeconfig to investigate:
-
-```console
-kubectl --kubeconfig .labctl/image-pull-backoff/kubeconfig get pods
-kubectl --kubeconfig .labctl/image-pull-backoff/kubeconfig describe pod broken-image
-kubectl --kubeconfig .labctl/image-pull-backoff/kubeconfig get events --sort-by=.lastTimestamp
-```
 
 Delete the lab resources and cluster:
 
@@ -199,19 +185,9 @@ go run ./cmd/labctl start image-pull-backoff
 
 ## Available labs
 
-| Lab | Cluster topology | Intended symptom | Ready condition |
-|---|---|---|---|
-| [`image-pull-backoff`](labs/image-pull-backoff/) | 1 control plane, 1 worker | A Pod cannot pull its configured image | Pod container reports `ImagePullBackOff` |
-
-### Image pull failure
-
-The lab uses the guaranteed-invalid image reference:
-
-```text
-registry.invalid/k8s-system-labs/does-not-exist:v1
-```
-
-The learner can investigate image resolution, Pod conditions, container state, and Kubernetes events without the runner revealing the diagnosis workflow.
+| Lab | Difficulty | Description |
+|---|---|---|
+| [`image-pull-backoff`](labs/image-pull-backoff/) | Easy | A newly deployed workload refuses to start. Enter the cluster, investigate the failure, and restore the workload. |
 
 ## Providers
 
@@ -248,22 +224,22 @@ The current lab API is `labs.k8s-system-labs/v1alpha1`.
 apiVersion: labs.k8s-system-labs/v1alpha1
 kind: Lab
 metadata:
-  name: image-pull-backoff
+  name: example-lab
 spec:
   providers:
     cluster: kind
     lab: kubectl
   cluster:
-    name: image-pull-backoff
+    name: example-lab
     workers: 1
   manifests:
-    - pod.yaml
+    - scenario.yaml
   ready:
     timeout: 2m
     pod:
       namespace: default
-      name: broken-image
-      waitingReason: ImagePullBackOff
+      name: scenario-pod
+      waitingReason: ExpectedWaitingReason
 ```
 
 Paths in `spec.manifests` are resolved relative to the lab definition. Unknown YAML fields and invalid definitions are rejected.
