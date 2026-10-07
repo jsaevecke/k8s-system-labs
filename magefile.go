@@ -19,12 +19,17 @@ const kindVersion = "v0.33.0"
 
 var logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-// Check runs the repository's tests and static analysis.
+// Check runs the repository's tests and linters.
 func Check() error {
 	if err := runCommand("go", "test", "./..."); err != nil {
 		return err
 	}
-	return runCommand("go", "vet", "./...")
+	return Lint()
+}
+
+// Lint runs golangci-lint with the repository configuration.
+func Lint() error {
+	return runCommand("golangci-lint", "run")
 }
 
 // Build compiles labctl into .labctl/build.

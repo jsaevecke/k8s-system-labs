@@ -1,0 +1,46 @@
+version: "2"
+
+run:
+  modules-download-mode: readonly
+  timeout: 5m
+
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - durationcheck
+    - errname
+    - errorlint
+    - exhaustive
+    - gocritic
+    - loggercheck
+    - makezero
+    - misspell
+    - modernize
+    - musttag
+    - nilerr
+    - nilnesserr
+    - nolintlint
+    - predeclared
+    - recvcheck
+    - revive
+    - sloglint
+    - unconvert
+    - unparam
+    - usestdlibvars
+    - wastedassign
+  exclusions:
+    generated: strict
+    presets:
+      - comments
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: strict
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

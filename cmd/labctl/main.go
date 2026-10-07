@@ -26,13 +26,14 @@ const usage = "usage: labctl <list|start|delete> [lab-name]"
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer stop()
 
 	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	if err := run(ctx, logger, os.Args, os.Stdout, os.Stderr, exec.LookPath, os.Getwd); err != nil {
 		logger.ErrorContext(ctx, "labctl failed", logging.FieldError, err)
+		stop()
 		os.Exit(1)
 	}
+	stop()
 }
 
 func run(

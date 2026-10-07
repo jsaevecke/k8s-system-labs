@@ -61,7 +61,19 @@ mage -version
 
 The `PATH` changes above apply to the current shell. Add the resolved Go binary directory to the user or shell profile `PATH` to make `mage` and `labctl` available in future shells.
 
-### 2. Install kubectl
+### 2. Install golangci-lint
+
+Install the pinned golangci-lint v2.14.0 binary by following the [official installation guide](https://golangci-lint.run/docs/welcome/install/local/). The official binary is preferred over building the tool from source.
+
+Unix, macOS, and Git Bash on Windows:
+
+```console
+GOBIN="$(go env GOBIN)"; [ -n "$GOBIN" ] || GOBIN="$(go env GOPATH)/bin"
+curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b "$GOBIN" v2.14.0
+golangci-lint version
+```
+
+### 3. Install kubectl
 
 `kubectl` is a prerequisite because `labctl start` and `labctl delete` check for it immediately after validating command arguments, before loading a lab or selecting providers. `labctl list` does not require access to a cluster.
 
@@ -95,9 +107,10 @@ go version
 docker info
 kubectl version --client
 mage -version
+golangci-lint version
 ```
 
-### 3. Install provider tools and labctl
+### 4. Install provider tools and labctl
 
 Choose the providers explicitly:
 
@@ -109,7 +122,7 @@ This command:
 
 1. Verifies the selected providers and the `kubectl` prerequisite.
 2. Installs Kind into `GOBIN`, or the first `GOPATH/bin` when `GOBIN` is unset.
-3. Runs `go test ./...` and `go vet ./...`.
+3. Runs `go test ./...` and `golangci-lint run`.
 4. Builds and installs `labctl` into the same Go binary directory.
 5. Runs `labctl list`.
 
@@ -126,6 +139,7 @@ Supported selections are `kind` for `-cluster` and `kubectl` for `-lab`. Both fl
 | Target | Behavior |
 |---|---|
 | `mage providers -cluster=kind -lab=kubectl` | Install selected provider tools and verify their prerequisites |
+| `mage lint` | Run golangci-lint with `.golangci.yml` |
 | `mage check` | Run tests and static analysis |
 | `mage build` | Build the platform-specific `labctl` executable under `.labctl/build/` |
 | `mage install -cluster=kind -lab=kubectl` | Run provider setup and checks, then install `labctl` and list the labs |
@@ -359,9 +373,9 @@ mage check
 mage build
 ```
 
-`mage build` writes the platform-specific executable to `.labctl/build/`. The underlying checks remain available directly:
+`mage check` runs the test suite and the pinned golangci-lint v2 configuration. `mage build` writes the platform-specific executable to `.labctl/build/`. The checks remain available directly:
 
 ```console
 go test ./...
-go vet ./...
+golangci-lint run
 ```

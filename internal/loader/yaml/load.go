@@ -19,13 +19,17 @@ func Load(path string) (domain.Lab, error) {
 	if err != nil {
 		return domain.Lab{}, fmt.Errorf("open lab definition: %w", err)
 	}
-	defer file.Close()
 
 	var definition domain.Lab
 	decoder := yamlv3.NewDecoder(file)
 	decoder.KnownFields(true)
-	if err := decoder.Decode(&definition); err != nil {
-		return domain.Lab{}, fmt.Errorf("decode lab definition: %w", err)
+	decodeErr := decoder.Decode(&definition)
+	closeErr := file.Close()
+	if decodeErr != nil {
+		return domain.Lab{}, fmt.Errorf("decode lab definition: %w", decodeErr)
+	}
+	if closeErr != nil {
+		return domain.Lab{}, fmt.Errorf("close lab definition: %w", closeErr)
 	}
 	definition.SourcePath = absolutePath
 
