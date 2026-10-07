@@ -1,0 +1,19 @@
+apiVersion: labs.k8s-system-labs/v1alpha1
+kind: Lab
+metadata:
+  name: image-pull-backoff
+spec:
+  providers:
+    cluster: kind
+    lab: kubectl
+  cluster:
+    name: image-pull-backoff
+    workers: 1
+  manifests:
+    - pod.yaml
+  ready:
+    timeout: 2m
+    pod:
+      namespace: default
+      name: broken-image
+      waitingReason: ImagePullBackOff
