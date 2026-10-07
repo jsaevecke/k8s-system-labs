@@ -24,7 +24,6 @@ func TestRunRejectsUnsupportedClusterProvider(t *testing.T) {
 		context.Background(),
 		[]string{"labctl", "start", "unsupported-cluster"},
 		io.Discard,
-		io.Discard,
 		executableFound,
 		workingDirectory(root),
 		discardLogger(),
@@ -40,7 +39,6 @@ func TestRunRejectsUnsupportedLabProvider(t *testing.T) {
 	err := run(
 		context.Background(),
 		[]string{"labctl", "start", "unsupported-lab"},
-		io.Discard,
 		io.Discard,
 		executableFound,
 		workingDirectory(root),
@@ -64,7 +62,6 @@ func TestRunListsLabsWithoutKubectl(t *testing.T) {
 		context.Background(),
 		[]string{"labctl", "list"},
 		&output,
-		io.Discard,
 		lookPath,
 		workingDirectory(root),
 		discardLogger(),
@@ -97,7 +94,6 @@ func TestRunRequiresKubectlBeforeDiscoveringLabs(t *testing.T) {
 		context.Background(),
 		[]string{"labctl", "start", "missing-lab"},
 		io.Discard,
-		io.Discard,
 		lookPath,
 		getwd,
 		discardLogger(),
@@ -122,7 +118,7 @@ func TestRunChecksArgumentsBeforeDependencies(t *testing.T) {
 		return "", nil
 	}
 
-	err := run(context.Background(), []string{"labctl"}, io.Discard, io.Discard, lookPath, getwd, discardLogger())
+	err := run(context.Background(), []string{"labctl"}, io.Discard, lookPath, getwd, discardLogger())
 	if err == nil {
 		t.Fatal("expected argument error")
 	}

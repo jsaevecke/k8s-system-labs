@@ -27,7 +27,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 
 	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
-	if err := run(ctx, os.Args, os.Stdout, os.Stderr, exec.LookPath, os.Getwd, logger); err != nil {
+	if err := run(ctx, os.Args, os.Stdout, exec.LookPath, os.Getwd, logger); err != nil {
 		logger.ErrorContext(ctx, "labctl failed", logging.FieldError, err)
 		stop()
 		os.Exit(1)
@@ -39,7 +39,6 @@ func run(
 	ctx context.Context,
 	args []string,
 	stdout io.Writer,
-	stderr io.Writer,
 	lookPath func(string) (string, error),
 	getwd func() (string, error),
 	logger *slog.Logger,
@@ -80,13 +79,19 @@ func run(
 	}
 
 	stateRoot := filepath.Join(filepath.Dir(labCatalog.Root), ".labctl")
+	commandStdout := slog.NewLogLogger(logger.Handler(), slog.LevelInfo).Writer()
+	commandStderr := slog.NewLogLogger(logger.Handler(), slog.LevelError).Writer()
 
-	labProvider, err := labprovider.New(definition.Spec.Providers.Lab, kubectl.New(kubectlBinary, stdout, stderr), logger)
+	labProvider, err := labprovider.New(
+		definition.Spec.Providers.Lab,
+		kubectl.New(kubectlBinary, commandStdout, commandStderr),
+		logger,
+	)
 	if err != nil {
 		return err
 	}
 
-	clusterProvider, err := clusterprovider.New(definition.Spec.Providers.Cluster, stateRoot, stdout, stderr)
+	clusterProvider, err := clusterprovider.New(definition.Spec.Providers.Cluster, stateRoot, commandStdout, commandStderr)
 	if err != nil {
 		return err
 	}

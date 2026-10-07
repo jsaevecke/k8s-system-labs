@@ -162,6 +162,8 @@ A ready lab reports structured output similar to:
 level=INFO msg="lab ready" lab=image-pull-backoff namespace=default pod=broken-image waiting_reason=ImagePullBackOff
 ```
 
+Kind and kubectl standard output is logged at `INFO`; standard error is logged at `ERROR`, keeping provider command output in the same structured stream.
+
 Use the generated kubeconfig to investigate:
 
 ```console
