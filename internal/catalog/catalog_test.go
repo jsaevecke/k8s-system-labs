@@ -7,7 +7,7 @@ import (
 )
 
 func TestResolveRejectsPaths(t *testing.T) {
-	catalog := &Catalog{root: t.TempDir()}
+	catalog := &Catalog{Root: t.TempDir()}
 	for _, name := range []string{"", ".", "..", "../outside", "nested/lab"} {
 		t.Run(name, func(t *testing.T) {
 			if _, err := catalog.Resolve(name); err == nil {
@@ -27,11 +27,13 @@ func TestFindWalksToRepositoryRoot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	catalog, err := Find(child)
+	catalog, err := Find(func() (string, error) {
+		return child, nil
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if catalog.root != filepath.Join(root, "labs") {
-		t.Fatalf("catalog root = %q", catalog.root)
+	if catalog.Root != filepath.Join(root, "labs") {
+		t.Fatalf("catalog root = %q", catalog.Root)
 	}
 }

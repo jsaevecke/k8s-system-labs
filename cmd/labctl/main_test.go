@@ -22,12 +22,12 @@ func TestRunRejectsUnsupportedClusterProvider(t *testing.T) {
 
 	err := run(
 		context.Background(),
-		discardLogger(),
 		[]string{"labctl", "start", "unsupported-cluster"},
 		io.Discard,
 		io.Discard,
 		executableFound,
 		workingDirectory(root),
+		discardLogger(),
 	)
 	if !errors.Is(err, clusterprovider.ErrUnsupportedProvider) {
 		t.Fatalf("expected unsupported cluster provider error, got %v", err)
@@ -39,12 +39,12 @@ func TestRunRejectsUnsupportedLabProvider(t *testing.T) {
 
 	err := run(
 		context.Background(),
-		discardLogger(),
 		[]string{"labctl", "start", "unsupported-lab"},
 		io.Discard,
 		io.Discard,
 		executableFound,
 		workingDirectory(root),
+		discardLogger(),
 	)
 	if !errors.Is(err, labprovider.ErrUnsupportedProvider) {
 		t.Fatalf("expected unsupported lab provider error, got %v", err)
@@ -62,12 +62,12 @@ func TestRunListsLabsWithoutKubectl(t *testing.T) {
 
 	err := run(
 		context.Background(),
-		discardLogger(),
 		[]string{"labctl", "list"},
 		&output,
 		io.Discard,
 		lookPath,
 		workingDirectory(root),
+		discardLogger(),
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -95,12 +95,12 @@ func TestRunRequiresKubectlBeforeDiscoveringLabs(t *testing.T) {
 
 	err := run(
 		context.Background(),
-		discardLogger(),
 		[]string{"labctl", "start", "missing-lab"},
 		io.Discard,
 		io.Discard,
 		lookPath,
 		getwd,
+		discardLogger(),
 	)
 	if !errors.Is(err, missingKubectl) {
 		t.Fatalf("expected missing kubectl error, got %v", err)
@@ -122,7 +122,7 @@ func TestRunChecksArgumentsBeforeDependencies(t *testing.T) {
 		return "", nil
 	}
 
-	err := run(context.Background(), discardLogger(), []string{"labctl"}, io.Discard, io.Discard, lookPath, getwd)
+	err := run(context.Background(), []string{"labctl"}, io.Discard, io.Discard, lookPath, getwd, discardLogger())
 	if err == nil {
 		t.Fatal("expected argument error")
 	}

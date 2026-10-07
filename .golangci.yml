@@ -29,6 +29,9 @@ linters:
     - unparam
     - usestdlibvars
     - wastedassign
+  settings:
+    exhaustive:
+      default-signifies-exhaustive: true
   exclusions:
     generated: strict
     presets:

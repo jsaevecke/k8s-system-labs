@@ -11,6 +11,6 @@ type Provider struct {
 	client *kubectlclient.Client
 }
 
-func New(logger *slog.Logger, client *kubectlclient.Client) *Provider {
+func New(client *kubectlclient.Client, logger *slog.Logger) *Provider {
 	return &Provider{logger: logger, client: client}
 }

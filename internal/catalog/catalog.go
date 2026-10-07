@@ -5,17 +5,21 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jsaevecke/k8s-system-labs/internal/domain"
 	yamlloader "github.com/jsaevecke/k8s-system-labs/internal/loader/yaml"
 )
 
 const definitionFile = "lab.yaml"
 
 type Catalog struct {
-	root string
+	Root string
 }
 
-func Find(startDirectory string) (*Catalog, error) {
+func Find(getwd func() (string, error)) (*Catalog, error) {
+	startDirectory, err := getwd()
+	if err != nil {
+		return nil, fmt.Errorf("read working directory: %w", err)
+	}
+
 	current, err := filepath.Abs(startDirectory)
 	if err != nil {
 		return nil, fmt.Errorf("resolve working directory: %w", err)
@@ -24,7 +28,7 @@ func Find(startDirectory string) (*Catalog, error) {
 	for {
 		labsRoot := filepath.Join(current, "labs")
 		if info, err := os.Stat(labsRoot); err == nil && info.IsDir() {
-			return &Catalog{root: labsRoot}, nil
+			return &Catalog{Root: labsRoot}, nil
 		}
 
 		parent := filepath.Dir(current)
@@ -35,16 +39,12 @@ func Find(startDirectory string) (*Catalog, error) {
 	}
 }
 
-func (c *Catalog) RepositoryRoot() string {
-	return filepath.Dir(c.root)
-}
-
 func (c *Catalog) Resolve(name string) (string, error) {
 	if name == "" || name == "." || name == ".." || filepath.Base(name) != name {
 		return "", fmt.Errorf("invalid lab name %q", name)
 	}
 
-	path := filepath.Join(c.root, name, definitionFile)
+	path := filepath.Join(c.Root, name, definitionFile)
 	info, err := os.Stat(path)
 	if err != nil {
 		return "", fmt.Errorf("find lab %q: %w", name, err)
@@ -55,18 +55,18 @@ func (c *Catalog) Resolve(name string) (string, error) {
 	return path, nil
 }
 
-func (c *Catalog) List() ([]domain.Lab, error) {
-	entries, err := os.ReadDir(c.root)
+func (c *Catalog) List() (Labs, error) {
+	entries, err := os.ReadDir(c.Root)
 	if err != nil {
 		return nil, fmt.Errorf("read labs directory: %w", err)
 	}
 
-	labs := make([]domain.Lab, 0, len(entries))
+	labs := make(Labs, 0, len(entries))
 	for _, entry := range entries {
 		if !entry.IsDir() {
 			continue
 		}
-		path := filepath.Join(c.root, entry.Name(), definitionFile)
+		path := filepath.Join(c.Root, entry.Name(), definitionFile)
 		if _, err := os.Stat(path); os.IsNotExist(err) {
 			continue
 		} else if err != nil {

@@ -18,10 +18,10 @@ type Provider interface {
 	Delete(context.Context, domain.Lab, domain.Cluster) error
 }
 
-func New(name domain.LabProvider, logger *slog.Logger, client *kubectlclient.Client) (Provider, error) {
+func New(name domain.LabProvider, client *kubectlclient.Client, logger *slog.Logger) (Provider, error) {
 	switch name {
 	case domain.LabProviderKubectl:
-		return kubectllab.New(logger, client), nil
+		return kubectllab.New(client, logger), nil
 	default:
 		return nil, fmt.Errorf("%w %q", ErrUnsupportedProvider, name)
 	}
